@@ -16,6 +16,7 @@ import {
   ASTMacroForm,
   ASTPartialSend,
   ASTTargettedSend,
+  SourceInfo,
 } from "./ast";
 import { SaucerToken, TokenStream, TokenTag } from "./TokenStream";
 
@@ -55,6 +56,7 @@ export interface ReaderClient {
     selector: ASTAtom,
     args: AST[],
   ): ASTTargettedSend;
+  createMacroForm(sourceStart: SourceInfo, modifiers: AST[], body: AST[], blockArgument)
   isBinarySelector(token: SaucerToken): boolean;
 }
 
@@ -249,20 +251,18 @@ export class Reader {
     }
     if (stream.peekTag() === TokenTag.OpenBrace) {
       const body = this.readBody(stream);
-      return new ASTMacroForm(
+      return this.client.createMacroForm(
         macroSourceStart,
         macroParts,
         body,
-        false,
         paramaterList,
       );
     } else if (stream.peekTag() === TokenTag.Equals) {
       const body = this.readAssignmentInitform(stream);
-      return new ASTMacroForm(
+      return this.client.createMacroForm(
         macroSourceStart,
         macroParts,
         body,
-        true,
         paramaterList,
       );
     } else {
