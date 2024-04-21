@@ -7,98 +7,8 @@
 // https://github.com/Gnuxie/saucer-reader
 // </text>
 
+import { RowTrackingStringStream, StringStream } from "super-cool-stream";
 import { SourceInfo } from "./ast";
-
-export class SuperCoolStream<
-  T extends { at: (...args: any) => any | undefined },
-> {
-  protected position: number;
-  /**
-   * Makes the super cool string stream.
-   * @param source A string to act as the source of the stream.
-   * @param start Where in the string we should start reading.
-   */
-  constructor(
-    public readonly source: T,
-    start = 0,
-  ) {
-    this.position = start;
-  }
-
-  public peekItem(eof = undefined) {
-    return this.source.at(this.position) ?? eof;
-  }
-
-  public readItem(eof = undefined) {
-    return this.source.at(this.position++) ?? eof;
-  }
-
-  public getPosition(): number {
-    return this.position;
-  }
-
-  public setPosition(n: number) {
-    this.position = n;
-  }
-
-  public clone(): SuperCoolStream<T> {
-    return new SuperCoolStream(this.source, this.position);
-  }
-}
-
-/**
- * Helper for peeking and reading character by character.
- */
-export class StringStream extends SuperCoolStream<string> {
-  private row = 0;
-  private column = 0;
-
-  public readItem(eof = undefined) {
-    const item = super.readItem(eof);
-    if (item === eof) {
-      return item;
-    } else if (item === "\n") {
-      this.row++;
-      this.column = 0;
-      return item;
-    } else {
-      this.column++;
-      return item;
-    }
-  }
-
-  public peekChar(...args: any[]) {
-    return this.peekItem(...args);
-  }
-
-  public readChar(...args: any[]) {
-    return this.readItem(...args);
-  }
-
-  public clone(): StringStream {
-    return new StringStream(this.source, this.position);
-  }
-
-  public get peekRow() {
-    return this.row;
-  }
-  public get peekColumn() {
-    return this.column;
-  }
-  public get readRow() {
-    return this.row - 1;
-  }
-  public get readColumn() {
-    if (this.row === 0) {
-      if ((this.column = 0)) {
-        return 0;
-      }
-      return this.column;
-    } else {
-      return this.column - 1;
-    }
-  }
-}
 
 export function createSourcePreview(
   source: string,
@@ -121,8 +31,8 @@ function readUntil(
   stream: StringStream,
   output: string[] = [],
 ): string[] {
-  while (stream.peekChar() !== undefined && !regex.test(stream.peekChar()!)) {
-    output.push(stream.readChar()!);
+  while (stream.peekChar() !== undefined && !regex.test(stream.peekChar())) {
+    output.push(stream.readChar());
   }
   return output;
 }
@@ -150,7 +60,10 @@ export interface SaucerToken {
   readonly raw: string;
 }
 
-type TokenParser = (stream: StringStream, tag: TokenTag) => SaucerToken;
+type TokenParser = (
+  stream: RowTrackingStringStream,
+  tag: TokenTag,
+) => SaucerToken;
 
 const TOKEN_PASRSERS = new Map<TokenTag, TokenParser>();
 
@@ -170,7 +83,7 @@ function defineTokenParser(tag: TokenTag, parser: TokenParser) {
   TOKEN_PASRSERS.set(tag, parser);
 }
 
-function sourceBase(stream: StringStream) {
+function sourceBase(stream: RowTrackingStringStream) {
   return {
     sourceInfo: {
       row: stream.peekRow,
@@ -180,7 +93,7 @@ function sourceBase(stream: StringStream) {
 }
 
 function characterTokenParser(
-  stream: StringStream,
+  stream: RowTrackingStringStream,
   tag: TokenTag,
 ): SaucerToken {
   return {
@@ -267,7 +180,7 @@ export class TokenStream {
   /** This is the index of the character that is being peeked. */
   private position: number = 0;
 
-  constructor(private readonly stream: StringStream) {
+  constructor(private readonly stream: RowTrackingStringStream) {
     // nothing to do.
   }
 
@@ -351,7 +264,7 @@ export class TokenStream {
     return peek;
   }
 
-  public peekTag(eof?: any) {
+  public peekTag<EOF = undefined>(eof?: EOF) {
     const peek = this.peek(undefined);
     if (peek === undefined) {
       return eof;
@@ -378,7 +291,7 @@ export class TokenStream {
   }
 
   public peekSourcePreview(): string {
-    return createSourcePreview(this.stream.source, {
+    return createSourcePreview(this.stream.source as string, {
       row: this.stream.peekRow,
       column: this.stream.peekColumn,
     });
