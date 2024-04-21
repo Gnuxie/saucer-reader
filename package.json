@@ -29,5 +29,8 @@
     "gnuxie-tsconfig": "git+https://github.com/Gnuxie/tsconfig.git",
     "prettier": "3.2.5",
     "typescript": "5.4.5"
+  },
+  "dependencies": {
+    "super-cool-stream": "git+https://github.com/Gnuxie/super-cool-stream"
   }
 }
