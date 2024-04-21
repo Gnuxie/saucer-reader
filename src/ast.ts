@@ -35,7 +35,6 @@ export interface ASTAtom<Raw = unknown> extends AbstractAST<Raw> {
 export interface ASTMacroForm extends AbstractAST<ASTMacroForm> {
   readonly modifiers: AST[];
   readonly body: AST[];
-  readonly blockArguments?: AST[];
   readonly astType: ASTType.MacroForm;
 }
 

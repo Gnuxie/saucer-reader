@@ -7,8 +7,7 @@
 // https://github.com/Gnuxie/saucer-reader
 // </text>
 
-import { Err, Ok, Result, ResultError } from "typescript-result";
-import { USymbol } from "../../primitive/symbol";
+import { Err, Result, ResultError } from "typescript-result";
 import {
   AST,
   ASTAtom,
@@ -56,7 +55,11 @@ export interface ReaderClient {
     selector: ASTAtom,
     args: AST[],
   ): ASTTargettedSend;
-  createMacroForm(sourceStart: SourceInfo, modifiers: AST[], body: AST[], blockArgument)
+  createMacroForm(
+    sourceStart: SourceInfo,
+    modifiers: AST[],
+    body: AST[],
+  ): ASTMacroForm;
   isBinarySelector(token: SaucerToken): boolean;
 }
 
@@ -251,20 +254,10 @@ export class Reader {
     }
     if (stream.peekTag() === TokenTag.OpenBrace) {
       const body = this.readBody(stream);
-      return this.client.createMacroForm(
-        macroSourceStart,
-        macroParts,
-        body,
-        paramaterList,
-      );
+      return this.client.createMacroForm(macroSourceStart, macroParts, body);
     } else if (stream.peekTag() === TokenTag.Equals) {
       const body = this.readAssignmentInitform(stream);
-      return this.client.createMacroForm(
-        macroSourceStart,
-        macroParts,
-        body,
-        paramaterList,
-      );
+      return this.client.createMacroForm(macroSourceStart, macroParts, body);
     } else {
       stream.assertPeekTag(
         TokenTag.OpenBrace,
