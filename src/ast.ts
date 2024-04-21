@@ -12,150 +12,92 @@ export interface SourceInfo {
   readonly column: number;
 }
 
-export interface AST<Raw = unknown> {
+export enum ASTType {
+  Atom,
+  MacroForm,
+  TargettedSend,
+  PartialSend,
+  ImplicitSelfSend,
+}
+
+interface AbstractAST<Raw = unknown> {
   readonly raw: Raw;
   readonly sourceInfo: SourceInfo;
-  readonly isAtom: boolean;
+  readonly astType: ASTType;
 }
 
-export interface ASTAtom<Raw = unknown> extends AST<Raw> {
-  readonly isAtom: true;
+export type AST = ASTAtom | ASTMacroForm | ASTMessageSend;
+
+export interface ASTAtom<Raw = unknown> extends AbstractAST<Raw> {
+  readonly astType: ASTType.Atom;
 }
 
-export function atomRawString(_atom: AST): string {
-  throw new TypeError(
-    "Consumers should implement ASTAtom interface on a CSTNode",
-  );
+export interface ASTMacroForm extends AbstractAST<ASTMacroForm> {
+  readonly modifiers: AST[];
+  readonly body: AST[];
+  readonly blockArguments?: AST[];
+  readonly astType: ASTType.MacroForm;
 }
 
-/**
- * We can just say that we scan modifiers left to right for the first
- * matching macro name.
- *
- * Expander function get given the following ASTMacroForms
- * in a list that it gets to choose which applies to it e.g. if else.
- */
-export class ASTMacroForm implements AST {
-  constructor(
-    public readonly sourceInfo: SourceInfo,
-    public readonly modifiers: ASTAtom[],
-    public readonly body: AST[],
-    public readonly isAssignment: boolean = false,
-    /** If there are no block arguments, then it is not a block. E.g. assignment */
-    public readonly blockArguments?: ASTAtom[],
-  ) {}
-
-  public get raw(): AST {
-    return this;
-  }
-
-  public replaceBody(newBody: AST[]): ASTMacroForm {
-    return new ASTMacroForm(
-      this.sourceInfo,
-      this.modifiers,
-      newBody,
-      this.isAssignment,
-      this.blockArguments,
-    );
-  }
-
-  public toCSTMethodForm(): CSTMethodForm {
-    const selector = this.modifiers.find(
-      (modifier) => !CSTMethodForm.MODIFIERS.has(atomRawString(modifier)),
-    );
-    if (selector === undefined) {
-      throw new TypeError("No selector provided for this Method form.");
-    }
-    return new CSTMethodForm(
-      this.sourceInfo,
-      selector,
-      this.modifiers,
-      this.body,
-      this.blockArguments,
-    );
-  }
-
-  public toCSTValueSlotForm(): CSTValueSlotForm {
-    const selector = this.modifiers.find(
-      (modifier) => !CSTValueSlotForm.MODIFIERS.has(atomRawString(modifier)),
-    );
-    if (selector === undefined) {
-      throw new TypeError("No selector provided for this value slot form.");
-    }
-    return new CSTValueSlotForm(
-      this.sourceInfo,
-      selector,
-      this.modifiers,
-      this.body,
-    );
-  }
+export interface AbstractASTMessageSend<Raw> extends AbstractAST<Raw> {
+  readonly selector: ASTAtom;
+  readonly args: AST[];
+  readonly astType:
+    | ASTType.ImplicitSelfSend
+    | ASTType.PartialSend
+    | ASTType.TargettedSend;
 }
 
-export class CSTMethodForm extends ASTMacroForm {
-  constructor(
-    sourceInfo: SourceInfo,
-    public readonly selector: ASTAtom,
-    modifiers: ASTAtom[],
-    body: AST[],
-    blockArguments?: ASTAtom[],
-  ) {
-    super(sourceInfo, modifiers, body, false, blockArguments);
-  }
-
-  public static readonly MODIFIERS = new Set(["public", "private"]);
-}
-
-export class CSTValueSlotForm extends ASTMacroForm {
-  constructor(
-    sourceInfo: SourceInfo,
-    public readonly selector: ASTAtom,
-    modifiers: ASTAtom[],
-    body: AST[],
-    blockArguments?: ASTAtom[],
-  ) {
-    super(sourceInfo, modifiers, body, true, blockArguments);
-  }
-
-  public static readonly MODIFIERS = new Set(["public", "private", "mutable"]);
-}
+export type ASTMessageSend =
+  | ASTTargettedSend
+  | ASTPartialSend
+  | ASTImplicitSelfSend;
 
 /**
  * All message sends are the same
  * except for the target of the send which can be one of the following:
  * implicit self (lexical first), targetted or partial.
  */
-export abstract class AbstractASTMessageSend {
-  constructor(
-    public readonly sourceInfo: SourceInfo,
-    public readonly selector: ASTAtom,
-    public readonly args: AST[],
-  ) {
-    // nothing to do.
-  }
 
-  public get raw(): AST {
-    return this;
-  }
+export interface ASTTargettedSend
+  extends AbstractASTMessageSend<ASTTargettedSend> {
+  readonly target: AST;
+  readonly astType: ASTType.TargettedSend;
 }
 
-export class ASTTargettedSend extends AbstractASTMessageSend implements AST {
-  constructor(
-    selector: ASTAtom,
-    public readonly subject: AST,
-    args: AST[],
-  ) {
-    super(selector.sourceInfo, selector, args);
-  }
+export interface ASTPartialSend extends AbstractASTMessageSend<ASTPartialSend> {
+  readonly astType: ASTType.PartialSend;
 }
 
-export class ASTPartialSend extends AbstractASTMessageSend implements AST {
-  constructor(selector: ASTAtom, args: AST[]) {
-    super(selector.sourceInfo, selector, args);
-  }
+export interface ASTImplicitSelfSend
+  extends AbstractASTMessageSend<ASTImplicitSelfSend> {
+  readonly astType: ASTType.ImplicitSelfSend;
 }
 
-export class ASTImplicitSelfSend extends AbstractASTMessageSend implements AST {
-  constructor(selector: ASTAtom, args: AST[]) {
-    super(selector.sourceInfo, selector, args);
-  }
-}
+export const ASTMirror = Object.freeze({
+  isASTAtom(ast: AST): ast is ASTAtom {
+    return ast.astType === ASTType.Atom;
+  },
+  isASTMacroForm(ast: AST): ast is ASTMacroForm {
+    return ast.astType === ASTType.MacroForm;
+  },
+  isASTMessageSend(ast: AST): ast is ASTMessageSend {
+    switch (ast.astType) {
+      case ASTType.ImplicitSelfSend:
+      case ASTType.PartialSend:
+      case ASTType.TargettedSend:
+        return true;
+      default:
+        return false;
+    }
+  },
+  isASTTargettedSend(ast: AST): ast is ASTTargettedSend {
+    return ast.astType === ASTType.TargettedSend;
+  },
+  isASTPartialSend(ast: AST): ast is ASTPartialSend {
+    return ast.astType === ASTType.PartialSend;
+  },
+  isASTImplicitSelfSend(ast: AST): ast is ASTImplicitSelfSend {
+    return ast.astType === ASTType.ImplicitSelfSend;
+  },
+});
