@@ -7,9 +7,8 @@
 // https://github.com/Gnuxie/saucer-reader
 // </text>
 
-import { UNumber } from "../../primitive/number";
+import { Err, Ok, Result, ResultError } from "typescript-result";
 import { USymbol } from "../../primitive/symbol";
-import { Result, ResultError } from "../../Result";
 import {
   AST,
   ASTAtom,
@@ -30,47 +29,33 @@ export class ReadError extends ResultError {
     super(message);
   }
 
-  public static Result<Ok>(
+  public static Result(
     message: string,
     options: { stream: TokenStream },
-  ): Result<Ok, ReadError> {
-    return Result.Err(new ReadError(options.stream, message));
+  ): Result<never, ReadError> {
+    return Err(new ReadError(options.stream, message));
   }
 }
 
 // Reader
-
 /**
  * TODO: Make the literals the reader creates for numeric types (and then everything else)
  * configurable. Including all the way down through symbols and cons.
  * just copy eclector tbh.
  */
-
 export interface ReaderClient {
   // While in the AST they might be an atom, they might not from a single token e.g. floats.
-  parseNumber(token: SaucerToken): any;
+  parseNumber(token: SaucerToken): ASTAtom;
   parseSymbol(token: SaucerToken): ASTAtom;
   parseString(token: SaucerToken): ASTAtom;
+  createPartialSend(selector: ASTAtom, args: AST[]): ASTPartialSend;
+  createImplicitSelfSend(selector: ASTAtom, args: AST[]): ASTImplicitSelfSend;
+  createTargettedSend(
+    target: AST,
+    selector: ASTAtom,
+    args: AST[],
+  ): ASTTargettedSend;
   isBinarySelector(token: SaucerToken): boolean;
-}
-
-export class SaucerReaderClient implements ReaderClient {
-  parseNumber(token: SaucerToken) {
-    return new ASTAtom(
-      new UNumber(Number.parseInt(token.raw)),
-      token.sourceInfo,
-    );
-  }
-  parseSymbol(token: SaucerToken) {
-    return new ASTAtom(USymbol.make(token.raw), token.sourceInfo);
-  }
-  parseString(token: SaucerToken) {
-    return new ASTAtom(token.raw, token.sourceInfo);
-  }
-  isBinarySelector(token: SaucerToken): boolean {
-    const selectors = new Set(["+", "-", "/", "*", "&&", "||", "<", ">"]);
-    return selectors.has(token.raw);
-  }
 }
 
 export class Reader {
@@ -97,9 +82,13 @@ export class Reader {
       items.push(this.readExpression(stream));
     }
     while (stream.peekTag() !== close) {
-      if (items.length !== 0 && !delimiters.includes(stream.peekTag())) {
+      const tag = stream.peekTag();
+      if (tag === undefined) {
+        throw new TypeError(`We shouldn't be getting an undefined peek here.`);
+      }
+      if (items.length !== 0 && !delimiters.includes(tag)) {
         throw new TypeError(
-          `Man we need better errors, expected a delimeter ${delimiters} but got ${stream.peekTag()}.\n${stream.peekSourcePreview()}`,
+          `Man we need better errors, expected a delimeter ${delimiters.toString()} but got ${stream.peekTag()}.\n${stream.peekSourcePreview()}`,
         );
       }
       stream.read(); // dispose of delimiter.
@@ -161,28 +150,29 @@ export class Reader {
     // This is wrong, surely? the atoms aren't being parsed
     if (stream.peekTag() === TokenTag.Dot) {
       stream.read(); // discard the dot.
-      return new ASTPartialSend(
+      return this.client.createPartialSend(
         this.client.parseSymbol(stream.read()),
         this.readMessageArguments(stream),
       );
     } else if (stream.peekTag() === TokenTag.Symbol) {
-      const firstExpression = this.client.parseSymbol(stream.read()!);
+      const firstExpression = this.client.parseSymbol(stream.read());
+      // Targetted Send
       if (stream.peekTag() === TokenTag.Dot) {
-        // Targetted Send
-        return new ASTTargettedSend(
-          stream.read(),
+        const targetExpression = this.readExpression(stream);
+        return this.client.createTargettedSend(
+          targetExpression,
           firstExpression,
           this.readMessageArguments(stream),
         );
       } else {
         // Implicit self send
         if (stream.peekTag() === TokenTag.OpenParen) {
-          return new ASTImplicitSelfSend(
+          return this.client.createImplicitSelfSend(
             firstExpression,
             this.readMessageArguments(stream),
           );
         } else {
-          return new ASTImplicitSelfSend(firstExpression, []);
+          return this.client.createImplicitSelfSend(firstExpression, []);
         }
       }
     } else {
@@ -214,9 +204,9 @@ export class Reader {
       this.client.isBinarySelector(stream.peek())
     ) {
       const infixOperator = stream.read()!;
-      maybeModifierAST = new ASTTargettedSend(
-        new ASTAtom(USymbol.make(infixOperator.raw), infixOperator.sourceInfo),
+      maybeModifierAST = this.client.createTargettedSend(
         maybeModifierAST,
+        this.client.parseSymbol(infixOperator),
         [this.readExpression(stream)],
       );
     }
