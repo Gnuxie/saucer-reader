@@ -1,0 +1,33 @@
+{
+  "name": "saucer-reader",
+  "version": "0.0.0",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "author": {
+    "name": "Gnuxie",
+    "email": "Gnuxie@protonmail.com"
+  },
+  "license": "AFL-3.0",
+  "repository": {
+    "url": "https://github.com/Gnuxie/matrix-protection-suite.git",
+    "type": "git"
+  },
+  "scripts": {
+    "start": "yarn tsc --project tsconfig.json --watch",
+    "build": "rm -rf dist && yarn tsc --project tsconfig.json"
+  },
+  "private": false,
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "7.7.0",
+    "@typescript-eslint/parser": "7.7.0",
+    "eslint": "8.56.0",
+    "eslint-config-prettier": "9.1.0",
+    "eslint-plugin-prettier": "5.1.2",
+    "gnuxie-tsconfig": "git+https://github.com/Gnuxie/tsconfig.git",
+    "prettier": "3.2.5",
+    "typescript": "5.4.5"
+  }
+}
