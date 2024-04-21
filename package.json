@@ -31,6 +31,7 @@
     "typescript": "5.4.5"
   },
   "dependencies": {
-    "super-cool-stream": "git+https://github.com/Gnuxie/super-cool-stream"
+    "super-cool-stream": "git+https://github.com/Gnuxie/super-cool-stream",
+    "typescript-result": "git+https://github.com/Gnuxie/typescript-result.git"
   }
 }
