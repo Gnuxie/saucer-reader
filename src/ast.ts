@@ -85,16 +85,16 @@ export interface ASTImplicitSelfSend
 }
 
 export const ASTMirror = Object.freeze({
-  isASTAtom(ast: AST): ast is ASTAtom {
+  isAtom(ast: AST): ast is ASTAtom {
     return ast.astType === ASTType.Atom;
   },
-  isASTMacroForm(ast: AST): ast is ASTMacroForm {
+  isMacroForm(ast: AST): ast is ASTMacroForm {
     return ast.astType === ASTType.MacroForm;
   },
-  isASTParanethesizedForm(ast: AST): ast is ASTParanethesizedForm {
+  isParanethesizedForm(ast: AST): ast is ASTParanethesizedForm {
     return ast.astType === ASTType.ParanethesizedForm;
   },
-  isASTMessageSend(ast: AST): ast is ASTMessageSend {
+  isMessageSend(ast: AST): ast is ASTMessageSend {
     switch (ast.astType) {
       case ASTType.ImplicitSelfSend:
       case ASTType.PartialSend:
@@ -104,13 +104,13 @@ export const ASTMirror = Object.freeze({
         return false;
     }
   },
-  isASTTargettedSend(ast: AST): ast is ASTTargettedSend {
+  isTargettedSend(ast: AST): ast is ASTTargettedSend {
     return ast.astType === ASTType.TargettedSend;
   },
-  isASTPartialSend(ast: AST): ast is ASTPartialSend {
+  isPartialSend(ast: AST): ast is ASTPartialSend {
     return ast.astType === ASTType.PartialSend;
   },
-  isASTImplicitSelfSend(ast: AST): ast is ASTImplicitSelfSend {
+  isImplicitSelfSend(ast: AST): ast is ASTImplicitSelfSend {
     return ast.astType === ASTType.ImplicitSelfSend;
   },
 });
