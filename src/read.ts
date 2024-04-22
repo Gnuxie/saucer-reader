@@ -252,18 +252,21 @@ export class Reader {
         TokenTag.CloseParen,
       ).forEach((v) => paramaterList.push(v));
     }
-    if (stream.peekTag() === TokenTag.OpenBrace) {
-      const body = this.readBody(stream);
-      return this.client.createMacroForm(macroSourceStart, macroParts, body);
-    } else if (stream.peekTag() === TokenTag.Equals) {
-      const body = this.readAssignmentInitform(stream);
-      return this.client.createMacroForm(macroSourceStart, macroParts, body);
-    } else {
-      stream.assertPeekTag(
-        TokenTag.OpenBrace,
-        "Was expecting a body for this macro form.",
-      );
-      throw new TypeError();
+    switch (stream.peekTag()) {
+      case TokenTag.OpenBrace:
+        const body = this.readBody(stream);
+        return this.client.createMacroForm(macroSourceStart, macroParts, body);
+      case TokenTag.CloseBrace:
+      case TokenTag.Comma:
+      case TokenTag.Semicolon:
+      case TokenTag.CloseParen:
+        return this.client.createMacroForm(macroSourceStart, macroParts, []);
+      default:
+        stream.assertPeekTag(
+          TokenTag.OpenBrace,
+          "Was expecting a body for this macro form.",
+        );
+        throw new TypeError();
     }
   }
 
@@ -273,15 +276,6 @@ export class Reader {
       TokenTag.OpenBrace,
       [TokenTag.Comma, TokenTag.Semicolon],
       TokenTag.CloseBrace,
-    );
-  }
-
-  public readAssignmentInitform(stream: TokenStream): AST[] {
-    return this.readDelimitedList(
-      stream,
-      TokenTag.Equals,
-      [TokenTag.Comma],
-      TokenTag.Semicolon,
     );
   }
 }

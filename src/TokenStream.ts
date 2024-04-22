@@ -45,7 +45,6 @@ export enum TokenTag {
   Dot = "Dot",
   Semicolon = "Semicolon",
   Comma = "Comma",
-  Equals = "Equals",
   Symbol = "Symbol",
   Number = "Number",
   String = "String",
@@ -139,23 +138,6 @@ defineTokenParser(TokenTag.Symbol, function (stream, tag): SaucerToken {
   }
 });
 
-defineTokenParser(TokenTag.Equals, function (stream, tag): SaucerToken {
-  stream.readChar(); // one equals.
-  if (OPERATOR_SYMBOLS_REGEX.test(stream.peekChar())) {
-    return {
-      ...sourceBase(stream),
-      tag: TokenTag.Symbol,
-      raw: readUntil(OPERATOR_SYMBOLS_MATTER_REGEX, stream, ["="]).join(""),
-    };
-  } else {
-    return {
-      ...sourceBase(stream),
-      tag,
-      raw: "=",
-    };
-  }
-});
-
 defineTokenParser(TokenTag.Number, function (stream, tag): SaucerToken {
   return {
     ...sourceBase(stream),
@@ -208,8 +190,6 @@ export class TokenStream {
         return TokenTag.Dot;
       case ";":
         return TokenTag.Semicolon;
-      case "=":
-        return TokenTag.Equals;
       case '"':
         return TokenTag.String;
       case ",":
