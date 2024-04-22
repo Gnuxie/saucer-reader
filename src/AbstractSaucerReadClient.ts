@@ -17,6 +17,7 @@ import {
   ASTMacroForm,
   ASTType,
   ASTParanethesizedForm,
+  ASTBracedForm,
 } from "./ast";
 import { ReaderClient } from "./read";
 
@@ -36,6 +37,16 @@ export class AbstractSaucerReadClient
       sourceInfo: sourceStart,
       astType: ASTType.ParanethesizedForm,
       get raw(): ASTParanethesizedForm {
+        return this;
+      },
+    });
+  }
+  createBracedForm(sourceStart: SourceInfo, inner: AST[]): ASTBracedForm {
+    return Object.freeze({
+      sourceInfo: sourceStart,
+      inner,
+      astType: ASTType.BracedForm,
+      get raw(): ASTBracedForm {
         return this;
       },
     });

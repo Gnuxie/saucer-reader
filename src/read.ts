@@ -11,8 +11,10 @@ import { Err, Result, ResultError } from "typescript-result";
 import {
   AST,
   ASTAtom,
+  ASTBracedForm,
   ASTImplicitSelfSend,
   ASTMacroForm,
+  ASTMirror,
   ASTParanethesizedForm,
   ASTPartialSend,
   ASTTargettedSend,
@@ -65,6 +67,7 @@ export interface ReaderClient {
     sourceStart: SourceInfo,
     inner: AST[],
   ): ASTParanethesizedForm;
+  createBracedForm(sourceStart: SourceInfo, inner: AST[]): ASTBracedForm;
   isBinarySelector(token: SaucerToken): boolean;
 }
 
@@ -206,6 +209,20 @@ export class Reader {
     return this.client.createParanethesizedForm(sourceStart, inner);
   }
 
+  public maybeReadBracedForm(stream: TokenStream): ASTBracedForm | undefined {
+    if (stream.peekTag() !== TokenTag.OpenBrace) {
+      return undefined;
+    }
+    const sourceStart = stream.peek()!.sourceInfo;
+    const inner = this.readDelimitedList(
+      stream,
+      TokenTag.OpenBrace,
+      [TokenTag.Comma, TokenTag.Semicolon],
+      TokenTag.CloseBrace,
+    );
+    return this.client.createBracedForm(sourceStart, inner);
+  }
+
   public maybeReadModifier(stream: TokenStream): AST | undefined {
     return (
       stream.savingPositionIf<AST | undefined>({
@@ -219,6 +236,10 @@ export class Reader {
       stream.savingPositionIf<AST | undefined>({
         predicate: (v) => v === undefined,
         body: () => this.maybeReadParanethesizedForm(stream),
+      }) ??
+      stream.savingPositionIf<AST | undefined>({
+        predicate: (v) => v === undefined,
+        body: () => this.maybeReadBracedForm(stream),
       })
     );
   }
@@ -261,20 +282,32 @@ export class Reader {
       macroParts.push(previousAST);
       previousAST = this.maybeReadModifier(stream);
     } while (previousAST !== undefined);
-    // We should surely do a comma check here? otherwise it will be fucky.
-    // TODO FIXME: HERE.
-    // .
-    // Now we expect to see a macro form
     switch (stream.peekTag()) {
-      case TokenTag.OpenBrace:
-        const body = this.readBody(stream);
-        return this.client.createMacroForm(macroSourceStart, macroParts, body);
       case TokenTag.CloseBrace:
       case TokenTag.Comma:
       case TokenTag.Semicolon:
       case TokenTag.CloseParen:
+        if (previousAST !== undefined && ASTMirror.isBracedForm(previousAST)) {
+          return this.client.createMacroForm(
+            macroSourceStart,
+            macroParts,
+            (previousAST as ASTBracedForm).inner,
+          );
+        }
         return this.client.createMacroForm(macroSourceStart, macroParts, []);
       default:
+        // this won't work because previousAST will always be undefined lol
+        // so now we need to decide whether to provide a body access to ASTMacroForm.
+        // I was leaning on an accessor that returns the last modifier, but
+        // the body would still be in the modifier list, and not distinct,
+        // so i don't like that unless the accessor is described as bodyPosition.
+        if (previousAST !== undefined && ASTMirror.isBracedForm(previousAST)) {
+          return this.client.createMacroForm(
+            macroSourceStart,
+            macroParts,
+            (previousAST as ASTBracedForm).inner,
+          );
+        }
         stream.assertPeekTag(
           TokenTag.OpenBrace,
           "Was expecting a body for this macro form.",

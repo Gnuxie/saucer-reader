@@ -19,6 +19,7 @@ export enum ASTType {
   PartialSend,
   ImplicitSelfSend,
   ParanethesizedForm,
+  BracedForm,
 }
 
 interface AbstractAST<Raw = unknown> {
@@ -31,6 +32,7 @@ export type AST =
   | ASTAtom
   | ASTMacroForm
   | ASTParanethesizedForm
+  | ASTBracedForm
   | ASTMessageSend;
 
 export interface ASTAtom<Raw = unknown> extends AbstractAST<Raw> {
@@ -47,6 +49,11 @@ export interface ASTParanethesizedForm
   extends AbstractAST<ASTParanethesizedForm> {
   readonly inner: AST[];
   readonly astType: ASTType.ParanethesizedForm;
+}
+
+export interface ASTBracedForm extends AbstractAST<ASTBracedForm> {
+  readonly inner: AST[];
+  readonly astType: ASTType.BracedForm;
 }
 
 export interface AbstractASTMessageSend<Raw> extends AbstractAST<Raw> {
@@ -93,6 +100,9 @@ export const ASTMirror = Object.freeze({
   },
   isParanethesizedForm(ast: AST): ast is ASTParanethesizedForm {
     return ast.astType === ASTType.ParanethesizedForm;
+  },
+  isBracedForm(ast: AST): ast is ASTBracedForm {
+    return ast.astType === ASTType.BracedForm;
   },
   isMessageSend(ast: AST): ast is ASTMessageSend {
     switch (ast.astType) {
