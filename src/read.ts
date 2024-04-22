@@ -13,6 +13,7 @@ import {
   ASTAtom,
   ASTImplicitSelfSend,
   ASTMacroForm,
+  ASTParanethesizedForm,
   ASTPartialSend,
   ASTTargettedSend,
   SourceInfo,
@@ -60,6 +61,10 @@ export interface ReaderClient {
     modifiers: AST[],
     body: AST[],
   ): ASTMacroForm;
+  createParanethesizedForm(
+    sourceStart: SourceInfo,
+    inner: AST[],
+  ): ASTParanethesizedForm;
   isBinarySelector(token: SaucerToken): boolean;
 }
 
@@ -185,11 +190,24 @@ export class Reader {
     }
   }
 
-  /**
-   * Reads an expression, Does not touch terminals like comma and semi-colon at the end.
-   */
-  public readExpression(stream: TokenStream): AST {
-    let maybeModifierAST =
+  public maybeReadParanethesizedForm(
+    stream: TokenStream,
+  ): ASTParanethesizedForm | undefined {
+    if (stream.peekTag() !== TokenTag.OpenParen) {
+      return undefined;
+    }
+    const sourceStart = stream.peek()!.sourceInfo;
+    const inner = this.readDelimitedList(
+      stream,
+      TokenTag.OpenParen,
+      [TokenTag.Comma],
+      TokenTag.CloseParen,
+    );
+    return this.client.createParanethesizedForm(sourceStart, inner);
+  }
+
+  public maybeReadModifier(stream: TokenStream): AST | undefined {
+    return (
       stream.savingPositionIf<AST | undefined>({
         predicate: (v) => v === undefined,
         body: () => this.maybeReadMessageSend(stream),
@@ -197,7 +215,19 @@ export class Reader {
       stream.savingPositionIf<AST | undefined>({
         predicate: (v) => v === undefined,
         body: () => this.maybeReadLiteral(stream),
-      });
+      }) ??
+      stream.savingPositionIf<AST | undefined>({
+        predicate: (v) => v === undefined,
+        body: () => this.maybeReadParanethesizedForm(stream),
+      })
+    );
+  }
+
+  /**
+   * Reads an expression, Does not touch terminals like comma and semi-colon at the end.
+   */
+  public readExpression(stream: TokenStream): AST {
+    let maybeModifierAST = this.maybeReadModifier(stream);
     if (maybeModifierAST === undefined) {
       throw new Error(
         `idk, is there anything that isn't a message send?? probably anon function?\n${stream.peekSourcePreview()}`,
@@ -229,29 +259,12 @@ export class Reader {
     let previousAST: AST | undefined = maybeModifierAST;
     do {
       macroParts.push(previousAST);
-      previousAST =
-        stream.savingPositionIf<AST | undefined>({
-          predicate: (v) => v === undefined,
-          body: () => this.maybeReadMessageSend(stream),
-        }) ??
-        stream.savingPositionIf<AST | undefined>({
-          predicate: (v) => v === undefined,
-          body: () => this.maybeReadLiteral(stream),
-        });
+      previousAST = this.maybeReadModifier(stream);
     } while (previousAST !== undefined);
     // We should surely do a comma check here? otherwise it will be fucky.
     // TODO FIXME: HERE.
     // .
     // Now we expect to see a macro form
-    const paramaterList: AST[] = [];
-    if (stream.peekTag() === TokenTag.OpenParen) {
-      this.readDelimitedList(
-        stream,
-        TokenTag.OpenParen,
-        [TokenTag.Comma],
-        TokenTag.CloseParen,
-      ).forEach((v) => paramaterList.push(v));
-    }
     switch (stream.peekTag()) {
       case TokenTag.OpenBrace:
         const body = this.readBody(stream);

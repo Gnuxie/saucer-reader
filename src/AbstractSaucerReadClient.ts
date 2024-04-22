@@ -16,6 +16,7 @@ import {
   SourceInfo,
   ASTMacroForm,
   ASTType,
+  ASTParanethesizedForm,
 } from "./ast";
 import { ReaderClient } from "./read";
 
@@ -26,6 +27,19 @@ export class AbstractSaucerReadClient
       "parseNumber" | "parseSymbol" | "parseString" | "isBinarySelector"
     >
 {
+  createParanethesizedForm(
+    sourceStart: SourceInfo,
+    inner: AST[],
+  ): ASTParanethesizedForm {
+    return Object.freeze({
+      inner,
+      sourceInfo: sourceStart,
+      astType: ASTType.ParanethesizedForm,
+      get raw(): ASTParanethesizedForm {
+        return this;
+      },
+    });
+  }
   createPartialSend(selector: ASTAtom<unknown>, args: AST[]): ASTPartialSend {
     return Object.freeze({
       selector,
