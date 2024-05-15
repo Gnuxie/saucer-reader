@@ -58,11 +58,7 @@ export interface ReaderClient {
     selector: ASTAtom,
     args: AST[],
   ): ASTTargettedSend;
-  createMacroForm(
-    sourceStart: SourceInfo,
-    modifiers: AST[],
-    body: AST[],
-  ): ASTMacroForm;
+  createMacroForm(sourceStart: SourceInfo, modifiers: AST[]): ASTMacroForm;
   createParanethesizedForm(
     sourceStart: SourceInfo,
     inner: AST[],
@@ -288,26 +284,18 @@ export class Reader {
       case TokenTag.Semicolon:
       case TokenTag.CloseParen:
         if (previousAST !== undefined && ASTMirror.isBracedForm(previousAST)) {
-          return this.client.createMacroForm(
-            macroSourceStart,
-            macroParts,
-            (previousAST as ASTBracedForm).inner,
-          );
+          return this.client.createMacroForm(macroSourceStart, macroParts);
         }
-        return this.client.createMacroForm(macroSourceStart, macroParts, []);
+        return this.client.createMacroForm(macroSourceStart, macroParts);
+      case undefined:
+        if (macroParts.length > 1) {
+          return this.client.createMacroForm(macroSourceStart, macroParts);
+        } else if (macroParts.length === 1) {
+          return macroParts[0];
+        } else {
+          // fall through to default
+        }
       default:
-        // this won't work because previousAST will always be undefined lol
-        // so now we need to decide whether to provide a body access to ASTMacroForm.
-        // I was leaning on an accessor that returns the last modifier, but
-        // the body would still be in the modifier list, and not distinct,
-        // so i don't like that unless the accessor is described as bodyPosition.
-        if (previousAST !== undefined && ASTMirror.isBracedForm(previousAST)) {
-          return this.client.createMacroForm(
-            macroSourceStart,
-            macroParts,
-            (previousAST as ASTBracedForm).inner,
-          );
-        }
         stream.assertPeekTag(
           TokenTag.OpenBrace,
           "Was expecting a body for this macro form.",

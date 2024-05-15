@@ -41,8 +41,8 @@ export interface ASTAtom<Raw = unknown> extends AbstractAST<Raw> {
 
 export interface ASTMacroForm extends AbstractAST<ASTMacroForm> {
   readonly modifiers: AST[];
-  readonly body: AST[];
   readonly astType: ASTType.MacroForm;
+  readonly tailModifier: AST | undefined;
 }
 
 export interface ASTParanethesizedForm

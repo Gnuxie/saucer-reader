@@ -92,18 +92,16 @@ export class AbstractSaucerReadClient
       sourceInfo: target.sourceInfo,
     });
   }
-  createMacroForm(
-    sourceStart: SourceInfo,
-    modifiers: AST[],
-    body: AST[],
-  ): ASTMacroForm {
+  createMacroForm(sourceStart: SourceInfo, modifiers: AST[]): ASTMacroForm {
     return Object.freeze({
       modifiers,
-      body,
       sourceInfo: sourceStart,
       astType: ASTType.MacroForm,
       get raw(): ASTMacroForm {
         return this;
+      },
+      get tailModifier(): AST | undefined {
+        return this.modifiers.at(-1);
       },
     });
   }
