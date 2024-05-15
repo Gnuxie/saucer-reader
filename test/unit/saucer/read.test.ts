@@ -8,10 +8,12 @@ import {
 import { Reader } from "../../../src/read";
 import {
   ASTAtom,
+  ASTDestructure,
   ASTImplicitSelfSend,
   ASTMacroForm,
   ASTMirror,
 } from "../../../src/ast";
+import { ReadAny, ReadExpect } from "../../../src/ReadExpect";
 
 describe("read basics", function () {
   it("can read symbols", function () {
@@ -48,8 +50,8 @@ describe("read basics", function () {
     const result = new Reader(new JSSaucerReadClient()).readExpression(stream);
     expect(ASTMirror.isMacroForm(result)).toBeTruthy();
     const macroForm = result as ASTMacroForm;
-    expect(macroForm.modifiers.length).toBe(2);
-    expect(macroForm.body.length).toBe(1);
+    expect(macroForm.modifiers.length).toBe(3);
+    expect(ASTDestructure.tailModifierInner(macroForm)?.length).toBe(1);
   });
   it("can read partial send in a macro form", function () {
     const example = `.height { }`;
@@ -57,7 +59,7 @@ describe("read basics", function () {
     const result = new Reader(new JSSaucerReadClient()).readExpression(stream);
     expect(ASTMirror.isMacroForm(result)).toBeTruthy();
     const macro = result as ASTMacroForm;
-    expect(macro.modifiers.length).toBe(1);
+    expect(macro.modifiers.length).toBe(2);
     const partialSend = macro.modifiers[0];
     if (!ASTMirror.isPartialSend(partialSend)) {
       throw new TypeError(`Expected ASTPartialSend`);
@@ -80,7 +82,7 @@ describe("read basics", function () {
     const result = new Reader(new JSSaucerReadClient()).readExpression(stream);
     expect(ASTMirror.isMacroForm(result)).toBeTruthy();
     const macro = result as ASTMacroForm;
-    expect(macro.body.length).toBe(0);
+    expect(ASTDestructure.tailModifierInner(macro)).toBe(undefined);
     expect(macro.modifiers.length).toBe(4);
   });
   it("can read string", function () {
@@ -105,14 +107,31 @@ describe("read basics", function () {
             }
         }`;
     const stream = new TokenStream(new RowTrackingStringStream(example, 0));
-    const result = new Reader(new JSSaucerReadClient()).readExpression(stream);
-    console.log(result);
+    const reader = new Reader(new JSSaucerReadClient());
+    const result = reader.readExpression(stream);
+    const readExpect = new ReadExpect(reader);
     expect(ASTMirror.isMacroForm(result)).toBeTruthy();
-    const destructure = result as ASTMacroForm;
-    expect(destructure.modifiers.length).toBe(2);
-    expect(ASTMirror.isMacroForm(destructure.body[0])).toBeTruthy();
-    const match = destructure.body[0] as ASTMacroForm;
-    expect(match.modifiers.length).toBe(2);
-    expect(match.body.length).toBe(2);
+    const destructureMacroForm = result as ASTMacroForm;
+    readExpect.matches(destructureMacroForm.modifiers, [
+      "public",
+      "destructure",
+      "(something)",
+      ReadAny,
+    ]);
+    expect(ASTMirror.isMacroForm(destructureMacroForm.tailModifier!)).toBe(
+      true,
+    );
+    const matchForm = destructureMacroForm.tailModifier as ASTMacroForm;
+    readExpect.matches(matchForm.modifiers, ["match", "something", ReadAny]);
+    expect(ASTMirror.isMacroForm(matchForm.tailModifier!)).toBe(true);
+    const matchBody = matchForm.tailModifier as ASTMacroForm;
+    expect(ASTMirror.isMacroForm(matchBody.modifiers[0])).toBe(true);
+    const heightWidthTestForm = matchBody.modifiers[0] as ASTMacroForm;
+    readExpect.matches(heightWidthTestForm.modifiers, [
+      ".height > 12 && .width",
+      "===",
+      "10",
+      ReadAny,
+    ]);
   });
 });

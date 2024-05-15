@@ -92,17 +92,76 @@ export interface ASTImplicitSelfSend
 }
 
 export const ASTMirror = Object.freeze({
+  isASTEqual(astA: AST, astB: AST): boolean {
+    switch (astA.astType) {
+      case ASTType.Atom:
+        return this.isAtom(astB) ? this.isAtomEqual(astA, astB) : false;
+      case ASTType.BracedForm:
+        return this.isBracedForm(astB)
+          ? this.isBracedFormEqual(astA, astB)
+          : false;
+      case ASTType.ImplicitSelfSend:
+        return this.isImplicitSelfSend(astB)
+          ? this.isImplicitSelfSendEqual(astA, astB)
+          : false;
+      case ASTType.MacroForm:
+        return this.isMacroForm(astB)
+          ? this.isMacroFormEqual(astA, astB)
+          : false;
+      case ASTType.ParanethesizedForm:
+        return this.isParanethesizedForm(astB)
+          ? this.isParenthesizedFormEqual(astA, astB)
+          : false;
+      case ASTType.PartialSend:
+        return this.isPartialSend(astB)
+          ? this.isPartialSendEqual(astA, astB)
+          : false;
+      case ASTType.TargettedSend:
+        return this.isTargettedSend(astB)
+          ? this.isTargettedSendEqual(astA, astB)
+          : false;
+    }
+  },
   isAtom(ast: AST): ast is ASTAtom {
     return ast.astType === ASTType.Atom;
+  },
+  isAtomEqual(atoma: ASTAtom, atomb: ASTAtom): boolean {
+    // hmm this is a bit uneasy.
+    // in reality we need the read client to compare raw atoms.
+    return atoma.raw === atomb.raw;
   },
   isMacroForm(ast: AST): ast is ASTMacroForm {
     return ast.astType === ASTType.MacroForm;
   },
+  isMacroFormEqual(
+    macroFormA: ASTMacroForm,
+    macroFormB: ASTMacroForm,
+  ): boolean {
+    return this.isASTJSArrayEqual(macroFormA.modifiers, macroFormB.modifiers);
+  },
+  isASTJSArrayEqual(astA: AST[], astB: AST[]): boolean {
+    return astA.every((m, index) => {
+      const mB = astB.at(index);
+      if (mB === undefined) {
+        return false;
+      }
+      return this.isASTEqual(mB, m);
+    });
+  },
   isParanethesizedForm(ast: AST): ast is ASTParanethesizedForm {
     return ast.astType === ASTType.ParanethesizedForm;
   },
+  isParenthesizedFormEqual(
+    astA: ASTParanethesizedForm,
+    astB: ASTParanethesizedForm,
+  ): boolean {
+    return this.isASTJSArrayEqual(astA.inner, astB.inner);
+  },
   isBracedForm(ast: AST): ast is ASTBracedForm {
     return ast.astType === ASTType.BracedForm;
+  },
+  isBracedFormEqual(astA: ASTBracedForm, astB: ASTBracedForm): boolean {
+    return this.isASTJSArrayEqual(astA.inner, astB.inner);
   },
   isMessageSend(ast: AST): ast is ASTMessageSend {
     switch (ast.astType) {
@@ -114,13 +173,57 @@ export const ASTMirror = Object.freeze({
         return false;
     }
   },
+  isMessageSendEqual(astA: ASTMessageSend, astB: ASTMessageSend): boolean {
+    return (
+      this.isASTEqual(astA.selector, astB.selector) &&
+      this.isASTJSArrayEqual(astA.args, astB.args)
+    );
+  },
   isTargettedSend(ast: AST): ast is ASTTargettedSend {
     return ast.astType === ASTType.TargettedSend;
+  },
+  isTargettedSendEqual(
+    astA: ASTTargettedSend,
+    astB: ASTTargettedSend,
+  ): boolean {
+    return (
+      this.isASTEqual(astA.selector, astB.selector) &&
+      this.isASTEqual(astA.target, astB.target) &&
+      this.isASTJSArrayEqual(astA.args, astB.args)
+    );
   },
   isPartialSend(ast: AST): ast is ASTPartialSend {
     return ast.astType === ASTType.PartialSend;
   },
+  isPartialSendEqual(astA: ASTPartialSend, astB: ASTPartialSend): boolean {
+    return (
+      this.isASTEqual(astA.selector, astB.selector) &&
+      this.isASTJSArrayEqual(astA.args, astB.args)
+    );
+  },
   isImplicitSelfSend(ast: AST): ast is ASTImplicitSelfSend {
     return ast.astType === ASTType.ImplicitSelfSend;
+  },
+  isImplicitSelfSendEqual(
+    astA: ASTImplicitSelfSend,
+    astB: ASTImplicitSelfSend,
+  ): boolean {
+    return (
+      this.isASTEqual(astA.selector, astB.selector) &&
+      this.isASTJSArrayEqual(astA.args, astB.args)
+    );
+  },
+});
+
+export const ASTDestructure = Object.freeze({
+  tailModifierInner(ast: ASTMacroForm): AST[] | undefined {
+    const tail = ast.tailModifier;
+    if (tail === undefined) {
+      return undefined;
+    } else if (!ASTMirror.isBracedForm(tail)) {
+      return undefined;
+    } else {
+      return tail.inner;
+    }
   },
 });
