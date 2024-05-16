@@ -8,6 +8,7 @@ import {
 import { Reader } from "../../../src/read";
 import {
   ASTAtom,
+  ASTBracedForm,
   ASTDestructure,
   ASTImplicitSelfSend,
   ASTMacroForm,
@@ -118,20 +119,34 @@ describe("read basics", function () {
       "(something)",
       ReadAny,
     ]);
-    expect(ASTMirror.isMacroForm(destructureMacroForm.tailModifier!)).toBe(
+    expect(ASTMirror.isBracedForm(destructureMacroForm.tailModifier!)).toBe(
       true,
     );
-    const matchForm = destructureMacroForm.tailModifier as ASTMacroForm;
+    const matchForm = (destructureMacroForm.tailModifier as ASTBracedForm)
+      .inner[0] as ASTMacroForm;
     readExpect.matches(matchForm.modifiers, ["match", "something", ReadAny]);
-    expect(ASTMirror.isMacroForm(matchForm.tailModifier!)).toBe(true);
-    const matchBody = matchForm.tailModifier as ASTMacroForm;
-    expect(ASTMirror.isMacroForm(matchBody.modifiers[0])).toBe(true);
-    const heightWidthTestForm = matchBody.modifiers[0] as ASTMacroForm;
+    expect(ASTMirror.isBracedForm(matchForm.tailModifier!)).toBe(true);
+    const matchBody = matchForm.tailModifier as ASTBracedForm;
+    expect(matchBody.inner.length).toBe(2);
+    expect(ASTMirror.isMacroForm(matchBody.inner[0])).toBe(true);
+    const heightWidthTestForm = matchBody.inner[-1] as ASTMacroForm;
     readExpect.matches(heightWidthTestForm.modifiers, [
       ".height > 12 && .width",
       "===",
       "10",
       ReadAny,
     ]);
+  });
+  it("it can read ML too LMAO", function () {
+    const example = `public map(f, xs) =
+    match xs {
+      nil -> nil;
+      cons(head, tail) -> cons(f.value(head), map(f, tail))
+    }`;
+    const stream = new TokenStream(new RowTrackingStringStream(example, 0));
+    const reader = new Reader(new JSSaucerReadClient());
+    const result = reader.readExpression(stream);
+    //const readExpect = new ReadExpect(reader);
+    expect(ASTMirror.isMacroForm(result)).toBeTruthy();
   });
 });

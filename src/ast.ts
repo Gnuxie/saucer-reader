@@ -13,13 +13,13 @@ export interface SourceInfo {
 }
 
 export enum ASTType {
-  Atom,
-  MacroForm,
-  TargettedSend,
-  PartialSend,
-  ImplicitSelfSend,
-  ParanethesizedForm,
-  BracedForm,
+  Atom = "Atom",
+  MacroForm = "MacroForm",
+  TargettedSend = "TargettedSend",
+  PartialSend = "PartialSend",
+  ImplicitSelfSend = "ImplicitSelfSend",
+  ParanethesizedForm = "ParenthesizedForm",
+  BracedForm = "BracedForm",
 }
 
 interface AbstractAST<Raw = unknown> {
