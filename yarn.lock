@@ -1543,6 +1543,10 @@ globby@^11.1.0:
   version "0.3.0"
   resolved "git+https://github.com/Gnuxie/tsconfig.git#935dec6f13a266b16199570c99405d1df7686e95"
 
+"gnuxie-tsconfig@git+https://github.com/Gnuxie/tsconfig.git#0.4.0":
+  version "0.4.0"
+  resolved "git+https://github.com/Gnuxie/tsconfig.git#031fb1bd00a7e6891aa718b45423388b86c22c38"
+
 graceful-fs@^4.2.9:
   version "4.2.11"
   resolved "https://registry.yarnpkg.com/graceful-fs/-/graceful-fs-4.2.11.tgz#4183e4e8bf08bb6e05bbb2f7d2e0c8f712ca40e3"
