@@ -12,7 +12,7 @@ import { SourceInfo } from "./ast";
 
 export function createSourcePreview(
   source: string,
-  sourceInfo: SourceInfo,
+  sourceInfo: SourceInfo
 ): string {
   const rows = source.split(/\r?\n/);
   const sourceRow = rows.at(sourceInfo.row);
@@ -29,7 +29,7 @@ export function createSourcePreview(
 function readUntil(
   regex: RegExp,
   stream: StringStream,
-  output: string[] = [],
+  output: string[] = []
 ): string[] {
   while (stream.peekChar() !== undefined && !regex.test(stream.peekChar())) {
     output.push(stream.readChar());
@@ -61,7 +61,7 @@ export interface SaucerToken {
 
 type TokenParser = (
   stream: RowTrackingStringStream,
-  tag: TokenTag,
+  tag: TokenTag
 ) => SaucerToken;
 
 const TOKEN_PASRSERS = new Map<TokenTag, TokenParser>();
@@ -93,7 +93,7 @@ function sourceBase(stream: RowTrackingStringStream) {
 
 function characterTokenParser(
   stream: RowTrackingStringStream,
-  tag: TokenTag,
+  tag: TokenTag
 ): SaucerToken {
   return {
     ...sourceBase(stream),
@@ -203,7 +203,7 @@ export class TokenStream {
       return TokenTag.Symbol;
     }
     throw new TypeError(
-      `Could not find a token tag for ${this.stream.peekChar()}`,
+      `Could not find a token tag for ${this.stream.peekChar()}`
     );
   }
 

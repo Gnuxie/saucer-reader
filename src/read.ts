@@ -27,14 +27,14 @@ import { SaucerToken, TokenStream, TokenTag } from "./TokenStream";
 export class ReadError extends ResultError {
   constructor(
     public readonly stream: TokenStream,
-    message: string,
+    message: string
   ) {
     super(message);
   }
 
   public static Result(
     message: string,
-    options: { stream: TokenStream },
+    options: { stream: TokenStream }
   ): Result<never, ReadError> {
     return Err(new ReadError(options.stream, message));
   }
@@ -56,12 +56,12 @@ export interface ReaderClient {
   createTargettedSend(
     target: AST,
     selector: ASTAtom,
-    args: AST[],
+    args: AST[]
   ): ASTTargettedSend;
   createMacroForm(sourceStart: SourceInfo, modifiers: AST[]): ASTMacroForm;
   createParanethesizedForm(
     sourceStart: SourceInfo,
-    inner: AST[],
+    inner: AST[]
   ): ASTParanethesizedForm;
   createBracedForm(sourceStart: SourceInfo, inner: AST[]): ASTBracedForm;
 }
@@ -81,7 +81,7 @@ export class Reader {
   public readInnerList(
     stream: TokenStream,
     delimiters: TokenTag[],
-    close: TokenTag | undefined,
+    close: TokenTag | undefined
   ): AST[] {
     const items: AST[] = [];
     // first/only/last item of the list doesn't need a delimiter so what's happening here?
@@ -96,7 +96,7 @@ export class Reader {
       }
       if (items.length !== 0 && !delimiters.includes(tag)) {
         throw new TypeError(
-          `Man we need better errors, expected a delimeter ${delimiters.toString()} but got ${stream.peekTag()}.\n${stream.peekSourcePreview()}`,
+          `Man we need better errors, expected a delimeter ${delimiters.toString()} but got ${stream.peekTag()}.\n${stream.peekSourcePreview()}`
         );
       }
       stream.read(); // dispose of delimiter.
@@ -118,11 +118,11 @@ export class Reader {
     stream: TokenStream,
     open: TokenTag,
     delimiters: TokenTag[],
-    close: TokenTag,
+    close: TokenTag
   ): AST[] {
     if (stream.peekTag() !== open) {
       throw new TypeError(
-        `You're calling readDelimitedList but the opening token does not match expected ${open} but got ${stream.peekTag()}`,
+        `You're calling readDelimitedList but the opening token does not match expected ${open} but got ${stream.peekTag()}`
       );
     }
     stream.read();
@@ -137,7 +137,7 @@ export class Reader {
         stream,
         TokenTag.OpenParen,
         [TokenTag.Comma],
-        TokenTag.CloseParen,
+        TokenTag.CloseParen
       );
     } else {
       return [];
@@ -160,7 +160,7 @@ export class Reader {
       stream.read(); // discard the dot.
       return this.client.createPartialSend(
         this.client.parseSymbol(stream.read()),
-        this.readMessageArguments(stream),
+        this.readMessageArguments(stream)
       );
     } else if (stream.peekTag() === TokenTag.Symbol) {
       const firstExpression = this.client.parseSymbol(stream.read());
@@ -170,14 +170,14 @@ export class Reader {
         return this.client.createTargettedSend(
           targetExpression,
           firstExpression,
-          this.readMessageArguments(stream),
+          this.readMessageArguments(stream)
         );
       } else {
         // Implicit self send
         if (stream.peekTag() === TokenTag.OpenParen) {
           return this.client.createImplicitSelfSend(
             firstExpression,
-            this.readMessageArguments(stream),
+            this.readMessageArguments(stream)
           );
         } else {
           return this.client.createImplicitSelfSend(firstExpression, []);
@@ -189,7 +189,7 @@ export class Reader {
   }
 
   public maybeReadParanethesizedForm(
-    stream: TokenStream,
+    stream: TokenStream
   ): ASTParanethesizedForm | undefined {
     if (stream.peekTag() !== TokenTag.OpenParen) {
       return undefined;
@@ -199,7 +199,7 @@ export class Reader {
       stream,
       TokenTag.OpenParen,
       [TokenTag.Comma],
-      TokenTag.CloseParen,
+      TokenTag.CloseParen
     );
     return this.client.createParanethesizedForm(sourceStart, inner);
   }
@@ -213,7 +213,7 @@ export class Reader {
       stream,
       TokenTag.OpenBrace,
       [TokenTag.Comma, TokenTag.Semicolon],
-      TokenTag.CloseBrace,
+      TokenTag.CloseBrace
     );
     return this.client.createBracedForm(sourceStart, inner);
   }
@@ -246,7 +246,7 @@ export class Reader {
     const maybeModifierAST = this.maybeReadModifier(stream);
     if (maybeModifierAST === undefined) {
       throw new Error(
-        `idk, is there anything that isn't a message send?? probably anon function?\n${stream.peekSourcePreview()}`,
+        `idk, is there anything that isn't a message send?? probably anon function?\n${stream.peekSourcePreview()}`
       );
     }
     if (
@@ -290,7 +290,7 @@ export class Reader {
       default:
         stream.assertPeekTag(
           TokenTag.OpenBrace,
-          "Was expecting a body for this macro form.",
+          "Was expecting a body for this macro form."
         );
         throw new TypeError();
     }
@@ -301,7 +301,7 @@ export class Reader {
       stream,
       TokenTag.OpenBrace,
       [TokenTag.Comma, TokenTag.Semicolon],
-      TokenTag.CloseBrace,
+      TokenTag.CloseBrace
     );
   }
 }

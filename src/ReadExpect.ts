@@ -31,7 +31,7 @@ export class ReadExpect {
         continue;
       }
       throw new TypeError(
-        `Wait can't we just implement the real expect for this?`,
+        `Wait can't we just implement the real expect for this?`
       );
     }
     return this;

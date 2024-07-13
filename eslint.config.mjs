@@ -2,8 +2,8 @@
 //
 // SPDX-License-Identifier: CC0-1.0
 
-const { gnuxieEslint } = require("gnuxie-tsconfig");
+import { gnuxieEslint } from "gnuxie-tsconfig";
 
-module.exports = {
-  ...gnuxieEslint
-};
+export default [
+    ...gnuxieEslint
+];

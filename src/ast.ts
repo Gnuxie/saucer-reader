@@ -135,7 +135,7 @@ export const ASTMirror = Object.freeze({
   },
   isMacroFormEqual(
     macroFormA: ASTMacroForm,
-    macroFormB: ASTMacroForm,
+    macroFormB: ASTMacroForm
   ): boolean {
     return this.isASTJSArrayEqual(macroFormA.modifiers, macroFormB.modifiers);
   },
@@ -153,7 +153,7 @@ export const ASTMirror = Object.freeze({
   },
   isParenthesizedFormEqual(
     astA: ASTParanethesizedForm,
-    astB: ASTParanethesizedForm,
+    astB: ASTParanethesizedForm
   ): boolean {
     return this.isASTJSArrayEqual(astA.inner, astB.inner);
   },
@@ -184,7 +184,7 @@ export const ASTMirror = Object.freeze({
   },
   isTargettedSendEqual(
     astA: ASTTargettedSend,
-    astB: ASTTargettedSend,
+    astB: ASTTargettedSend
   ): boolean {
     return (
       this.isASTEqual(astA.selector, astB.selector) &&
@@ -206,7 +206,7 @@ export const ASTMirror = Object.freeze({
   },
   isImplicitSelfSendEqual(
     astA: ASTImplicitSelfSend,
-    astB: ASTImplicitSelfSend,
+    astB: ASTImplicitSelfSend
   ): boolean {
     return (
       this.isASTEqual(astA.selector, astB.selector) &&

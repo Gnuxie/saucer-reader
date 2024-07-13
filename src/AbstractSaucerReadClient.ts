@@ -22,15 +22,11 @@ import {
 import { ReaderClient } from "./read";
 
 export class AbstractSaucerReadClient
-  implements
-    Omit<
-      ReaderClient,
-      "parseNumber" | "parseSymbol" | "parseString"
-    >
+  implements Omit<ReaderClient, "parseNumber" | "parseSymbol" | "parseString">
 {
   createParanethesizedForm(
     sourceStart: SourceInfo,
-    inner: AST[],
+    inner: AST[]
   ): ASTParanethesizedForm {
     return Object.freeze({
       inner,
@@ -64,7 +60,7 @@ export class AbstractSaucerReadClient
   }
   createImplicitSelfSend(
     selector: ASTAtom<unknown>,
-    args: AST[],
+    args: AST[]
   ): ASTImplicitSelfSend {
     return Object.freeze({
       selector,
@@ -79,7 +75,7 @@ export class AbstractSaucerReadClient
   createTargettedSend(
     target: AST,
     selector: ASTAtom<unknown>,
-    args: AST[],
+    args: AST[]
   ): ASTTargettedSend {
     return Object.freeze({
       selector,
