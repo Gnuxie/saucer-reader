@@ -47,7 +47,7 @@ export class AbstractSaucerReadClient
       },
     });
   }
-  createPartialSend(selector: ASTAtom<unknown>, args: AST[]): ASTPartialSend {
+  createPartialSend(selector: ASTAtom, args: AST[]): ASTPartialSend {
     return Object.freeze({
       selector,
       args,
@@ -59,7 +59,7 @@ export class AbstractSaucerReadClient
     });
   }
   createImplicitSelfSend(
-    selector: ASTAtom<unknown>,
+    selector: ASTAtom,
     args: AST[]
   ): ASTImplicitSelfSend {
     return Object.freeze({
@@ -74,7 +74,7 @@ export class AbstractSaucerReadClient
   }
   createTargettedSend(
     target: AST,
-    selector: ASTAtom<unknown>,
+    selector: ASTAtom,
     args: AST[]
   ): ASTTargettedSend {
     return Object.freeze({

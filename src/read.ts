@@ -14,7 +14,6 @@ import {
   ASTBracedForm,
   ASTImplicitSelfSend,
   ASTMacroForm,
-  ASTMirror,
   ASTParanethesizedForm,
   ASTPartialSend,
   ASTTargettedSend,
@@ -191,10 +190,11 @@ export class Reader {
   public maybeReadParanethesizedForm(
     stream: TokenStream
   ): ASTParanethesizedForm | undefined {
-    if (stream.peekTag() !== TokenTag.OpenParen) {
+    const peekedToken = stream.peek();
+    if (peekedToken?.tag !== TokenTag.OpenParen) {
       return undefined;
     }
-    const sourceStart = stream.peek()!.sourceInfo;
+    const sourceStart = peekedToken.sourceInfo;
     const inner = this.readDelimitedList(
       stream,
       TokenTag.OpenParen,
@@ -205,10 +205,11 @@ export class Reader {
   }
 
   public maybeReadBracedForm(stream: TokenStream): ASTBracedForm | undefined {
-    if (stream.peekTag() !== TokenTag.OpenBrace) {
+    const peekedToken = stream.peek();
+    if (peekedToken?.tag !== TokenTag.OpenBrace) {
       return undefined;
     }
-    const sourceStart = stream.peek()!.sourceInfo;
+    const sourceStart = peekedToken.sourceInfo;
     const inner = this.readDelimitedList(
       stream,
       TokenTag.OpenBrace,
@@ -270,9 +271,6 @@ export class Reader {
       case TokenTag.Comma:
       case TokenTag.Semicolon:
       case TokenTag.CloseParen:
-        if (previousAST !== undefined && ASTMirror.isBracedForm(previousAST)) {
-          return this.client.createMacroForm(macroSourceStart, macroParts);
-        }
         return this.client.createMacroForm(macroSourceStart, macroParts);
       case undefined: {
         if (macroParts.length > 1) {
@@ -283,9 +281,8 @@ export class Reader {
             throw new TypeError(`Mare, something is wrong here`);
           }
           return formToUnnest;
-        } else {
-          // fall through to default
         }
+        // fall through
       }
       default:
         stream.assertPeekTag(

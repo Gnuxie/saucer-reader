@@ -20,7 +20,7 @@ export class ReadExpect {
     // nothing to do mare.
   }
 
-  public matches(ast: AST[], designator: (string | ReadPattern)[]): ReadExpect {
+  public matches(ast: AST[], designator: (string | ReadPattern)[]): this {
     for (const item of designator) {
       if (item === ReadAny) {
         continue;

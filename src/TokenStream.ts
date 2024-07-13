@@ -125,7 +125,7 @@ defineTokenParser(TokenTag.Symbol, function (stream, tag): SaucerToken {
     return {
       ...sourceBase(stream),
       tag,
-      raw: readUntil(/[^\w\-\<\>]/, stream).join(""),
+      raw: readUntil(/[^\w\-<>]/, stream).join(""),
     };
   } else if (OPERATOR_SYMBOLS_REGEX.test(stream.peekChar())) {
     return {

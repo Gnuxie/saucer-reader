@@ -119,13 +119,13 @@ describe("read basics", function () {
       "(something)",
       ReadAny,
     ]);
-    expect(ASTMirror.isBracedForm(destructureMacroForm.tailModifier!)).toBe(
+    expect(destructureMacroForm.tailModifier && ASTMirror.isBracedForm(destructureMacroForm.tailModifier)).toBe(
       true,
     );
     const matchForm = (destructureMacroForm.tailModifier as ASTBracedForm)
       .inner[0] as ASTMacroForm;
     readExpect.matches(matchForm.modifiers, ["match", "something", ReadAny]);
-    expect(ASTMirror.isBracedForm(matchForm.tailModifier!)).toBe(true);
+    expect(matchForm.tailModifier && ASTMirror.isBracedForm(matchForm.tailModifier)).toBe(true);
     const matchBody = matchForm.tailModifier as ASTBracedForm;
     expect(matchBody.inner.length).toBe(2);
     const matchPattern = matchBody.inner[0];
