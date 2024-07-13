@@ -25,7 +25,7 @@ export class AbstractSaucerReadClient
   implements
     Omit<
       ReaderClient,
-      "parseNumber" | "parseSymbol" | "parseString" | "isBinarySelector"
+      "parseNumber" | "parseSymbol" | "parseString"
     >
 {
   createParanethesizedForm(

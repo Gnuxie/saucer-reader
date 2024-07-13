@@ -62,7 +62,7 @@ describe("read basics", function () {
     const macro = result as ASTMacroForm;
     expect(macro.modifiers.length).toBe(2);
     const partialSend = macro.modifiers[0];
-    if (!ASTMirror.isPartialSend(partialSend)) {
+    if (partialSend === undefined || !ASTMirror.isPartialSend(partialSend)) {
       throw new TypeError(`Expected ASTPartialSend`);
     }
     const heightSelector = partialSend.selector;
@@ -92,11 +92,11 @@ describe("read basics", function () {
     const result = new Reader(new JSSaucerReadClient()).readExpression(stream);
     expect(ASTMirror.isAtom(result)).toBeTruthy();
   });
-  it("can read infix expression", function () {
+  it("can read infix expression - as macro form, nom.", function () {
     const example = "3 + add(2, 3) + 4";
     const stream = new TokenStream(new RowTrackingStringStream(example, 0));
     const result = new Reader(new JSSaucerReadClient()).readExpression(stream);
-    expect(ASTMirror.isTargettedSend(result)).toBeTruthy();
+    expect(ASTMirror.isMacroForm(result)).toBeTruthy();
   });
   it("can read complex macros", function () {
     const example = `public destructure(something) {
@@ -128,12 +128,13 @@ describe("read basics", function () {
     expect(ASTMirror.isBracedForm(matchForm.tailModifier!)).toBe(true);
     const matchBody = matchForm.tailModifier as ASTBracedForm;
     expect(matchBody.inner.length).toBe(2);
-    expect(ASTMirror.isMacroForm(matchBody.inner[0])).toBe(true);
-    const heightWidthTestForm = matchBody.inner[-1] as ASTMacroForm;
+    const matchPattern = matchBody.inner[0];
+    if (matchPattern === undefined || !ASTMirror.isMacroForm(matchPattern)) {
+      throw new TypeError(`Should be able to parse the complex match pattern`)
+    }
+    const heightWidthTestForm = matchBody.inner.at(-1) as ASTMacroForm;
     readExpect.matches(heightWidthTestForm.modifiers, [
-      ".height > 12 && .width",
-      "===",
-      "10",
+      ".height > 12 && .width === 10",
       ReadAny,
     ]);
   });

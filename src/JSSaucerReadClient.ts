@@ -77,8 +77,4 @@ export class JSSaucerReadClient
   parseString(token: SaucerToken): JSASTString {
     return JSSaucerMirror.createString(token.sourceInfo, token.raw);
   }
-  isBinarySelector(token: SaucerToken): boolean {
-    const selectors = new Set(["+", "-", "/", "*", "&&", "||", "<", ">"]);
-    return selectors.has(token.raw);
-  }
 }

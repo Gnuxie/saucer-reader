@@ -64,7 +64,6 @@ export interface ReaderClient {
     inner: AST[],
   ): ASTParanethesizedForm;
   createBracedForm(sourceStart: SourceInfo, inner: AST[]): ASTBracedForm;
-  isBinarySelector(token: SaucerToken): boolean;
 }
 
 export class Reader {
@@ -244,22 +243,10 @@ export class Reader {
    * Reads an expression, Does not touch terminals like comma and semi-colon at the end.
    */
   public readExpression(stream: TokenStream): AST {
-    let maybeModifierAST = this.maybeReadModifier(stream);
+    const maybeModifierAST = this.maybeReadModifier(stream);
     if (maybeModifierAST === undefined) {
       throw new Error(
         `idk, is there anything that isn't a message send?? probably anon function?\n${stream.peekSourcePreview()}`,
-      );
-    }
-    // collect infix expressions.
-    if (
-      stream.peek() !== undefined &&
-      this.client.isBinarySelector(stream.peek())
-    ) {
-      const infixOperator = stream.read()!;
-      maybeModifierAST = this.client.createTargettedSend(
-        maybeModifierAST,
-        this.client.parseSymbol(infixOperator),
-        [this.readExpression(stream)],
       );
     }
     if (
@@ -287,14 +274,19 @@ export class Reader {
           return this.client.createMacroForm(macroSourceStart, macroParts);
         }
         return this.client.createMacroForm(macroSourceStart, macroParts);
-      case undefined:
+      case undefined: {
         if (macroParts.length > 1) {
           return this.client.createMacroForm(macroSourceStart, macroParts);
         } else if (macroParts.length === 1) {
-          return macroParts[0];
+          const formToUnnest = macroParts[0];
+          if (formToUnnest === undefined) {
+            throw new TypeError(`Mare, something is wrong here`);
+          }
+          return formToUnnest;
         } else {
           // fall through to default
         }
+      }
       default:
         stream.assertPeekTag(
           TokenTag.OpenBrace,
