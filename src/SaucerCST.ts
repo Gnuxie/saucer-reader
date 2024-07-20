@@ -7,13 +7,19 @@
 // https://github.com/Gnuxie/saucer-reader
 // </text>
 
-import { AST, ASTAtom, ASTMacroForm, ASTMirror, ASTParanethesizedForm } from "./ast";
+import {
+  AST,
+  ASTAtom,
+  ASTMacroForm,
+  ASTMirror,
+  ASTParanethesizedForm,
+} from "./ast";
 import { JSSaucerMirror } from "./JSSaucerReadClient";
 
 export enum CSTSaucerType {
-  ClassDefinition = 'ClassDefinition',
-  MethodDefinition = 'MethodDefinition',
-  AssignmentForm = 'AssignmentForm',
+  ClassDefinition = "ClassDefinition",
+  MethodDefinition = "MethodDefinition",
+  AssignmentForm = "AssignmentForm",
 }
 
 // a class definition is just a method definition.
@@ -39,7 +45,7 @@ export interface CSTMethodDefinition extends ASTMacroForm {
 
 export interface CSTLexicalVariableForm extends ASTMacroForm {
   readonly selector: ASTAtom;
-  readonly writeModifier: 'let' | 'const';
+  readonly writeModifier: "let" | "const";
   // consumer should check this against literals like private/protected
   // but this is AST because it's intended to be used like an interface key
   // for mirror chord/mirror magic.
@@ -47,7 +53,7 @@ export interface CSTLexicalVariableForm extends ASTMacroForm {
   // there's no enclosing object to get them from.
   // Private by default because if a accessMOdifier is not provided then
   // we have to default to private.
-  readonly accessModifier: AST | 'private';
+  readonly accessModifier: AST | "private";
   readonly assignmentForm: AST;
 }
 
@@ -65,5 +71,5 @@ export function nameFromAST(ast: AST): string | undefined {
 
 export interface CSTMethodParameters extends ASTParanethesizedForm {
   // we clearly don't support destructuring yet but whatever.
-  inner: ASTAtom[]
+  inner: ASTAtom[];
 }

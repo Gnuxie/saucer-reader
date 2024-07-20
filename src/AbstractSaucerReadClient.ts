@@ -58,10 +58,7 @@ export class AbstractSaucerReadClient
       sourceInfo: selector.sourceInfo,
     });
   }
-  createImplicitSelfSend(
-    selector: ASTAtom,
-    args: AST[]
-  ): ASTImplicitSelfSend {
+  createImplicitSelfSend(selector: ASTAtom, args: AST[]): ASTImplicitSelfSend {
     return Object.freeze({
       selector,
       args,
@@ -103,8 +100,8 @@ export class AbstractSaucerReadClient
         return Object.freeze({
           ...this,
           modifiers,
-        })
-      }
+        });
+      },
     });
   }
 }
