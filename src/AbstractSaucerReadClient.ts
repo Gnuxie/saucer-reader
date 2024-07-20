@@ -99,6 +99,12 @@ export class AbstractSaucerReadClient
       get tailModifier(): AST | undefined {
         return this.modifiers.at(-1);
       },
+      replaceModifiers(modifiers: AST[]): ASTMacroForm {
+        return Object.freeze({
+          ...this,
+          modifiers,
+        })
+      }
     });
   }
 }

@@ -7,11 +7,13 @@
 // https://github.com/Gnuxie/saucer-reader
 // </text>
 
+import { isError, Ok, Result } from 'typescript-result';
 import { AST, ASTMacroForm, ASTMirror } from '../ast';
 import { nameFromAST } from '../SaucerCST';
+import { StandardCementMixer } from './SaucerCSTCementMixer';
 
 type MacroModifierPredicate = (modifiers: AST[]) => boolean;
-type MacroExpansionFunction = (macro: ASTMacroForm) => AST;
+type MacroExpansionFunction = (macro: ASTMacroForm) => Result<AST>;
 type MacroExpander = {
     name: string,
     predicate: MacroModifierPredicate,
@@ -36,8 +38,8 @@ defineMacroExpander({
     predicate: (modifiers) => {
         return modifiers.find(modifier => nameFromAST(modifier) === 'const') !== undefined;
     },
-    expander: (form) =>
-})
+    expander: (form) => StandardCementMixer.lexicalVariableFormFromMacro(form)
+});
 
 function findMacro(modifiers: AST[]): MacroExpander|undefined {
     // below is a naive implementation that doesn't use the predicate system.
@@ -58,38 +60,56 @@ function findMacro(modifiers: AST[]): MacroExpander|undefined {
     return undefined;
 }
 
-export function macroexpand1(form: AST): AST {
+export function macroexpand1(form: AST): Result<AST> {
   if (ASTMirror.isMacroForm(form)) {
       const macroExpander = findMacro(form.modifiers);
       if (macroExpander === undefined) {
-          return form;
+          return Ok(form);
       }
       const expansion = macroExpander.expander(form);
       return expansion;
   } else {
-      return form;
+      return Ok(form);
   }
 }
 
-function macroexpandAll(form: AST): AST {
+function macroexpandAll(form: AST): Result<AST> {
   let previousForm = form;
-  let nextForm = macroexpand1(previousForm);
+  let nextFormResult = macroexpand1(previousForm);
+  if (isError(nextFormResult)) {
+    return nextFormResult;
+  }
+  let nextForm = nextFormResult.ok;
   while (!Object.is(previousForm, nextForm)) {
       previousForm = nextForm;
-      nextForm = macroexpand1(previousForm);
+      nextFormResult = macroexpand1(previousForm);
+      if (isError(nextFormResult)) {
+        return nextFormResult;
+      }
+      nextForm = nextFormResult.ok;
   }
-  return nextForm;
+  return Ok(nextForm);
 }
 
 
-export function walk(form: AST): AST {
+export function walk(form: AST): Result<AST> {
   const exapndedForm = macroexpandAll(form);
-  if (ASTMirror.isMacroForm(exapndedForm)) {
-      return exapndedForm.replaceBody(
-          exapndedForm.body.map(
-              ast => macroWalk(ast)
-          )
-      );
+  if (isError(exapndedForm)) {
+    return exapndedForm;
+  }
+  if (ASTMirror.isMacroForm(exapndedForm.ok)) {
+    const nextModifiers: AST[] = [];
+    for (const modifier of exapndedForm.ok.modifiers) {
+      const expansion = walk(modifier);
+      if (isError(expansion)) {
+        return expansion;
+      }
+      nextModifiers.push(expansion.ok);
+    }
+    return Ok(
+      exapndedForm.ok.replaceModifiers(
+        nextModifiers
+    ));
   } else {
       return exapndedForm;
   }

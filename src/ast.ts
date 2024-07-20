@@ -43,6 +43,7 @@ export interface ASTMacroForm extends AbstractAST<ASTMacroForm> {
   readonly modifiers: AST[];
   readonly astType: ASTType.MacroForm;
   readonly tailModifier: AST | undefined;
+  replaceModifiers(modifiers: AST[]): ASTMacroForm;
 }
 
 export interface ASTParanethesizedForm

@@ -188,11 +188,7 @@ function parseClassDefinition(form: ASTMacroForm): Result<CSTClassDefinition> {
     return body;
   }
   return Ok(Object.freeze({
-    raw: form.raw,
-    astType: form.astType,
-    modifiers: form.modifiers,
-    tailModifier: form.tailModifier,
-    sourceInfo: form.sourceInfo,
+    ...form,
     name,
     extendsExpression: extendsForm.ok,
     parameters: parameters.ok,
@@ -221,11 +217,7 @@ function pasreMethodDefinition(form: ASTMacroForm): Result<CSTMethodDefinition> 
     return body;
   }
   return Ok(Object.freeze({
-    raw: form.raw,
-    astType: form.astType,
-    modifiers: form.modifiers,
-    tailModifier: form.tailModifier,
-    sourceInfo: form.sourceInfo,
+    ...form,
     name,
     parameters: parameters.ok,
     accessModifiers,
@@ -247,15 +239,11 @@ function parseAbstractMethodForm(form: ASTMacroForm): Result<CSTMethodDefinition
 export const StandardCementMixer = Object.freeze({
   createLexicalVariableForm(sourceForm: ASTMacroForm, selector: ASTAtom, binding: AST, writeModifier: 'const' | 'let', accessModifier: AST | 'private'): CSTLexicalVariableForm {
     return Object.freeze({
+      ...sourceForm,
       selector,
       writeModifier,
-      sourceInfo: sourceForm.sourceInfo,
       assignmentForm: binding,
       accessModifier,
-      modifiers: sourceForm.modifiers,
-      astType: sourceForm.astType,
-      tailModifier: sourceForm.modifiers.at(-1),
-      raw: sourceForm.raw,
     })
   },
   lexicalVariableFormFromMacro: parseLexicalVariableForm,
