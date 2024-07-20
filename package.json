@@ -18,7 +18,7 @@
   "scripts": {
     "lint": "yarn eslint && yarn prettier src --check",
     "start": "yarn tsc --project tsconfig.json --watch",
-    "build": "rm -rf dist && yarn tsc --project tsconfig.json"
+    "build": "tsc --project test/tsconfig.json && tsc > /dev/null 2>&1"
   },
   "private": false,
   "devDependencies": {
