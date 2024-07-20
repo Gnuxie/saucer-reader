@@ -1539,10 +1539,6 @@ globby@^11.1.0:
     merge2 "^1.4.1"
     slash "^3.0.0"
 
-"gnuxie-tsconfig@git+https://github.com/Gnuxie/tsconfig.git#0.3.0":
-  version "0.3.0"
-  resolved "git+https://github.com/Gnuxie/tsconfig.git#935dec6f13a266b16199570c99405d1df7686e95"
-
 "gnuxie-tsconfig@git+https://github.com/Gnuxie/tsconfig.git#0.4.0":
   version "0.4.0"
   resolved "git+https://github.com/Gnuxie/tsconfig.git#031fb1bd00a7e6891aa718b45423388b86c22c38"
@@ -2615,9 +2611,9 @@ strip-json-comments@^3.1.1:
   resolved "https://registry.yarnpkg.com/strip-json-comments/-/strip-json-comments-3.1.1.tgz#31f1281b3832630434831c310c01cccda8cbe006"
   integrity sha512-6fPc+R4ihwqP6N/aIv2f1gMH8lOVtWQHoqC4yK6oSDVVocumAsfCqjkXnqiYMhmMwS/mEHLp7Vehlt3ql6lEig==
 
-"super-cool-stream@git+https://github.com/Gnuxie/super-cool-stream":
-  version "0.0.0"
-  resolved "git+https://github.com/Gnuxie/super-cool-stream#b9edac9e93bb15ba3562e1568b202185b435ee33"
+"super-cool-stream@git+https://github.com/Gnuxie/super-cool-stream.git#0.1.0":
+  version "0.1.0"
+  resolved "git+https://github.com/Gnuxie/super-cool-stream.git#a37acd29ce01aff45a4b1bf68fedaeafebdfe369"
 
 supports-color@^5.3.0:
   version "5.5.0"

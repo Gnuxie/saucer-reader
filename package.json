@@ -35,7 +35,7 @@
     "typescript-eslint": "^7.16.0"
   },
   "dependencies": {
-    "super-cool-stream": "git+https://github.com/Gnuxie/super-cool-stream",
+    "super-cool-stream": "git+https://github.com/Gnuxie/super-cool-stream.git#0.1.0",
     "typescript-result": "git+https://github.com/Gnuxie/typescript-result.git"
   }
 }
