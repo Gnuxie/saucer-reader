@@ -8,7 +8,7 @@
 // </text>
 
 import { AST, ASTMacroForm, ASTMirror } from '../ast';
-import { JSSaucerMirror } from '../JSSaucerReadClient';
+import { nameFromAST } from '../SaucerCST';
 
 type MacroModifierPredicate = (modifiers: AST[]) => boolean;
 type MacroExpansionFunction = (macro: ASTMacroForm) => AST;

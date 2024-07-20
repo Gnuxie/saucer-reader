@@ -16,7 +16,7 @@
     "type": "git"
   },
   "scripts": {
-    "lint": "yarn eslint && yarn prettier src --check",
+    "lint": "yarn eslint src test&& yarn prettier src --check",
     "start": "yarn tsc --project tsconfig.json --watch",
     "build": "tsc --project test/tsconfig.json && tsc > /dev/null 2>&1"
   },
