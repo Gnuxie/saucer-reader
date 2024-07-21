@@ -12,6 +12,7 @@ import { TokenStream } from "../../../src/TokenStream";
 import { Reader } from "../../../src/read";
 import { JSSaucerReadClient } from "../../../src/JSSaucerReadClient";
 import { walk } from "../../../src/SaucerCodeWalker/SaucerCodeWalker";
+import { SaucerCSTCementMixerMacros } from "../../../src/SaucerCodeWalker/SaucerCSTCementMixerMacros";
 
 describe("just a class innit", function () {
   it("walks the code", function () {
@@ -25,7 +26,7 @@ describe("just a class innit", function () {
     const readResult = new Reader(new JSSaucerReadClient()).readExpression(
       stream
     );
-    const walkResult = walk(readResult);
+    const walkResult = walk(readResult, SaucerCSTCementMixerMacros);
     expect(Object.is(walkResult, readResult)).toBeFalsy();
   });
 });
