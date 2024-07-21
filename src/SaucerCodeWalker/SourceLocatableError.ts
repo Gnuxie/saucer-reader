@@ -20,7 +20,7 @@ export class SourceLocatableError extends ResultError {
   }
   public static Result(
     message: string,
-    options: { sourceInfo: SourceInfo; }
+    options: { sourceInfo: SourceInfo }
   ): Result<never, SourceLocatableError> {
     return Err(new SourceLocatableError(options.sourceInfo, message));
   }
