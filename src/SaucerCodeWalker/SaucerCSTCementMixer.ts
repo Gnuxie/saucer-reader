@@ -7,7 +7,7 @@
 // https://github.com/Gnuxie/saucer-reader
 // </text>
 
-import { Err, isError, Ok, Result, ResultError } from "typescript-result";
+import { isError, Ok, Result } from "typescript-result";
 import {
   AST,
   ASTAtom,
@@ -25,22 +25,7 @@ import {
 } from "../SaucerCST";
 import { StandardSuperCoolStream } from "super-cool-stream";
 import { ASTStream } from "./ASTStream";
-
-export class SourceLocatableError extends ResultError {
-  public constructor(
-    public readonly sourceInfo: SourceInfo,
-    message: string,
-    elaborations?: string[]
-  ) {
-    super(message, elaborations);
-  }
-  public static Result(
-    message: string,
-    options: { sourceInfo: SourceInfo }
-  ): Result<never, SourceLocatableError> {
-    return Err(new SourceLocatableError(options.sourceInfo, message));
-  }
-}
+import { SourceLocatableError } from "./SourceLocatableError";
 
 export interface SaucerCSTCementMixer {
   lexicalVariableFormFromMacro(
