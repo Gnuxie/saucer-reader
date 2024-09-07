@@ -7,7 +7,7 @@
 // https://github.com/Gnuxie/saucer-reader
 // </text>
 
-import { StandardSuperCoolStream } from "super-cool-stream";
+import { StandardSuperCoolStream } from "@gnuxie/super-cool-stream";
 import { Result, Ok } from "typescript-result";
 import { ASTMacroForm, AST, ASTMirror } from "../ast";
 import { CSTLexicalVariableForm, nameFromAST } from "../SaucerCST";

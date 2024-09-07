@@ -1,4 +1,4 @@
-import { RowTrackingStringStream } from "super-cool-stream";
+import { RowTrackingStringStream } from "@gnuxie/super-cool-stream";
 import { TokenStream } from "../../../src/TokenStream";
 import {
   JSASTNumber,

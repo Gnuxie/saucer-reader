@@ -359,6 +359,11 @@
   resolved "https://registry.yarnpkg.com/@eslint/object-schema/-/object-schema-2.1.4.tgz#9e69f8bb4031e11df79e03db09f9dbbae1740843"
   integrity sha512-BsWiH1yFGjXXS2yvrf5LyuoSIIbPrGUWob917o+BTKuZ7qJdxX8aJLRxs1fS9n6r7vESrq1OUqb68dANcFXuQQ==
 
+"@gnuxie/super-cool-stream@^0.2.1":
+  version "0.2.1"
+  resolved "https://registry.yarnpkg.com/@gnuxie/super-cool-stream/-/super-cool-stream-0.2.1.tgz#3e7d964f3861f534a207709c88c4acea194ae41f"
+  integrity sha512-Sk6MXHTAn3GVRk/EkF9dt514OB/tdmesAJnOwygU1s3YoHcxNkf5t9p0U6BfZt7dYSuqEnMnc/XH5PCVsbrjkA==
+
 "@humanwhocodes/module-importer@^1.0.1":
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/@humanwhocodes/module-importer/-/module-importer-1.0.1.tgz#af5b2691a22b44be847b0ca81641c5fb6ad0172c"
@@ -2610,10 +2615,6 @@ strip-json-comments@^3.1.1:
   version "3.1.1"
   resolved "https://registry.yarnpkg.com/strip-json-comments/-/strip-json-comments-3.1.1.tgz#31f1281b3832630434831c310c01cccda8cbe006"
   integrity sha512-6fPc+R4ihwqP6N/aIv2f1gMH8lOVtWQHoqC4yK6oSDVVocumAsfCqjkXnqiYMhmMwS/mEHLp7Vehlt3ql6lEig==
-
-"super-cool-stream@git+https://github.com/Gnuxie/super-cool-stream.git#0.1.0":
-  version "0.1.0"
-  resolved "git+https://github.com/Gnuxie/super-cool-stream.git#a37acd29ce01aff45a4b1bf68fedaeafebdfe369"
 
 supports-color@^5.3.0:
   version "5.5.0"

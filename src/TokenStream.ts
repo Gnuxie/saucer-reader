@@ -7,7 +7,10 @@
 // https://github.com/Gnuxie/saucer-reader
 // </text>
 
-import { RowTrackingStringStream, StringStream } from "super-cool-stream";
+import {
+  RowTrackingStringStream,
+  StringStream,
+} from "@gnuxie/super-cool-stream";
 import { SourceInfo } from "./ast";
 
 export function createSourcePreview(

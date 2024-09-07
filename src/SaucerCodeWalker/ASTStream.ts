@@ -7,7 +7,10 @@
 // https://github.com/Gnuxie/saucer-reader
 // </text>
 
-import { StandardSuperCoolStream, SuperCoolStream } from "super-cool-stream";
+import {
+  StandardSuperCoolStream,
+  SuperCoolStream,
+} from "@gnuxie/super-cool-stream";
 import { AST } from "../ast";
 
 export type ASTStream = SuperCoolStream<AST, AST[]>;

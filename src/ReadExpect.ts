@@ -7,7 +7,7 @@
 // https://github.com/Gnuxie/saucer-reader
 // </text>
 
-import { RowTrackingStringStream } from "super-cool-stream";
+import { RowTrackingStringStream } from "@gnuxie/super-cool-stream";
 import { TokenStream } from "./TokenStream";
 import { Reader } from "./read";
 import { AST, ASTMirror } from "./ast";
