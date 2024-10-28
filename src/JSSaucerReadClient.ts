@@ -7,7 +7,6 @@
 // https://github.com/Gnuxie/saucer-reader
 // </text>
 
-import { noCase } from "change-case";
 import { AbstractSaucerReadClient } from "./AbstractSaucerReadClient";
 import { SaucerToken } from "./TokenStream";
 import { ASTAtom, ASTType, SourceInfo } from "./ast";
@@ -37,14 +36,13 @@ export const JSSaucerMirror = Object.freeze({
     }) as JSASTNumber;
   },
   createSymbol(sourceInfo: SourceInfo, symbolString: string): JSASTSymbol {
-    const raw = noCase(symbolString);
     return Object.freeze({
       [JSTypeTag]: JSType.Symbol,
       sourceInfo,
-      raw,
+      raw: symbolString,
       astType: ASTType.Atom,
       get words() {
-        return raw.split(" ");
+        return symbolString.split(" ");
       },
     }) as JSASTSymbol;
   },
