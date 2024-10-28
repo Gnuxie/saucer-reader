@@ -36,6 +36,7 @@
   },
   "dependencies": {
     "@gnuxie/super-cool-stream": "^0.2.1",
+    "change-case": "^5.4.4",
     "typescript-result": "git+https://github.com/Gnuxie/typescript-result.git"
   }
 }
